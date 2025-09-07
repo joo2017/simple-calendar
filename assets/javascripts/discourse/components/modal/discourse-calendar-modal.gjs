@@ -9,11 +9,7 @@ import DButton from "discourse/components/d-button";
 import DiscourseCalendarDatePicker from "../discourse-calendar-date-picker";
 import { fn } from "@ember/helper";
 import { mut } from "discourse/helpers/ember-helpers";
-
-// --- 修正从这里开始 ---
-// 导入处理事件绑定的 `on` 修饰符
 import { on } from "@ember/modifier";
-// --- 修正到这里结束 ---
 
 export default class DiscourseCalendarModal extends Component {
   @service modal;
@@ -31,6 +27,13 @@ export default class DiscourseCalendarModal extends Component {
   get isDateTabActive() {
     return this.activeTab === "date";
   }
+
+  // --- 修正从这里开始 ---
+  // 创建一个新的 getter 用于判断 recurrence tab 是否激活
+  get isRecurrenceTabActive() {
+    return this.activeTab === "recurrence";
+  }
+  // --- 修正到这里结束 ---
 
   @action
   setTab(tabName) {
@@ -61,7 +64,8 @@ export default class DiscourseCalendarModal extends Component {
           <button class="{{if this.isDateTabActive "active"}}" {{on "click" (fn this.setTab "date")}}>
             {{I18n.t "calendar.builder.tabs.date"}}
           </button>
-          <button class="{{if (not this.isDateTabActive) "active"}}" {{on "click" (fn this.setTab "recurrence")}}>
+          {{! 使用新的 getter 替代 (not ...) }}
+          <button class="{{if this.isRecurrenceTabActive "active"}}" {{on "click" (fn this.setTab "recurrence")}}>
             {{I18n.t "calendar.builder.tabs.recurrence"}}
           </button>
         </div>
@@ -86,7 +90,7 @@ export default class DiscourseCalendarModal extends Component {
       <:footer>
         <DButton @class="btn-primary" @action={{this.insertCalendar}} @label="calendar.builder.insert" />
         <DButton @action={{@closeModal}} @label="calendar.builder.cancel" />
-      </:footer>
+      </:footer-x>
     </DModal>
   </template>
 }
