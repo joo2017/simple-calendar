@@ -4,20 +4,20 @@ import { action } from "@ember/object";
 import { inject as service } from "@ember/service";
 import I18n from "I18n";
 import moment from "moment-timezone";
-
-// --- 修正从这里开始 ---
-// 导入所有在模板中使用的外部依赖
 import DModal from "discourse/components/d-modal";
 import DButton from "discourse/components/d-button";
 import DiscourseCalendarDatePicker from "../discourse-calendar-date-picker";
 import { fn } from "@ember/helper";
 import { mut } from "discourse/helpers/ember-helpers";
+
+// --- 修正从这里开始 ---
+// 导入处理事件绑定的 `on` 修饰符
+import { on } from "@ember/modifier";
 // --- 修正到这里结束 ---
 
 export default class DiscourseCalendarModal extends Component {
   @service modal;
 
-  // --- 状态追踪 ---
   @tracked fromDate = new Date();
   @tracked fromTime = "09:00";
   @tracked toDate = null;
@@ -28,7 +28,6 @@ export default class DiscourseCalendarModal extends Component {
   @tracked recurrence = null;
   @tracked activeTab = "date";
 
-  // --- 使用 Getter 替代 (eq) helper ---
   get isDateTabActive() {
     return this.activeTab === "date";
   }
@@ -48,7 +47,7 @@ export default class DiscourseCalendarModal extends Component {
       const toDateTime = moment.tz(`${moment(this.toDate).format("YYYY-MM-DD")} ${this.toTime}`, this.timezone);
       bbcode += ` end="${toDateTime.format()}"`;
     }
-    bbcode += ` name="Your Event Name"]\n`; // 添加一个默认名称
+    bbcode += ` name="Your Event Name"]\n`;
     bbcode += `[/event]\n[/calendar]`;
 
     this.args.model.toolbarEvent.addText(bbcode);
@@ -56,11 +55,9 @@ export default class DiscourseCalendarModal extends Component {
   }
 
   <template>
-    {{! 现在所有的组件和 helper 都已导入，可以正常使用了 }}
     <DModal @title={{I18n.t "calendar.builder.title"}} @closeModal={{@closeModal}}>
       <:body>
         <div class="discourse-calendar-modal-tabs">
-          {{! 使用 getter 替代 (eq) }}
           <button class="{{if this.isDateTabActive "active"}}" {{on "click" (fn this.setTab "date")}}>
             {{I18n.t "calendar.builder.tabs.date"}}
           </button>
