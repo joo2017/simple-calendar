@@ -1,0 +1,29 @@
+// 模态框样式
+.discourse-calendar-modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--primary-low);
+  margin-bottom: 1em;
+  button {
+    padding: 0.5em 1em;
+    border: none;
+    background: none;
+    &.active {
+      font-weight: bold;
+      box-shadow: 0 2px 0 0 var(--tertiary);
+    }
+  }
+}
+
+// 帖子内事件卡片样式
+.discourse-calendar-event {
+  border: 1px solid var(--primary-low);
+  background-color: var(--secondary-very-low);
+  padding: 1em;
+  border-radius: 5px;
+  margin-top: 1em;
+}
+.discourse-calendar-event-title {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 0.5em;
+}
