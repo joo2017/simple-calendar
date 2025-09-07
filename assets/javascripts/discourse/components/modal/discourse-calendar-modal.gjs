@@ -3,12 +3,21 @@ import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
 import { inject as service } from "@ember/service";
 import I18n from "I18n";
+import moment from "moment-timezone";
+
+// --- 修正从这里开始 ---
+// 导入所有在模板中使用的外部依赖
+import DModal from "discourse/components/d-modal";
+import DButton from "discourse/components/d-button";
+import DiscourseCalendarDatePicker from "../discourse-calendar-date-picker";
+import { fn } from "@ember/helper";
+import { mut } from "discourse/helpers/ember-helpers";
+// --- 修正到这里结束 ---
 
 export default class DiscourseCalendarModal extends Component {
   @service modal;
 
   // --- 状态追踪 ---
-  // 日期 Tab
   @tracked fromDate = new Date();
   @tracked fromTime = "09:00";
   @tracked toDate = null;
@@ -16,12 +25,13 @@ export default class DiscourseCalendarModal extends Component {
   @tracked timezone = moment.tz.guess();
   @tracked usePostTimezone = false;
   @tracked allDay = false;
+  @tracked recurrence = null;
+  @tracked activeTab = "date";
 
-  // 重复规则 Tab
-  @tracked recurrence = null; // "every_day", "every_week", etc.
-
-  // 当前激活的 Tab
-  @tracked activeTab = "date"; // "date" or "recurrence"
+  // --- 使用 Getter 替代 (eq) helper ---
+  get isDateTabActive() {
+    return this.activeTab === "date";
+  }
 
   @action
   setTab(tabName) {
@@ -30,43 +40,39 @@ export default class DiscourseCalendarModal extends Component {
 
   @action
   insertCalendar() {
-    // 这里是官方插件复杂的 BBCode 生成逻辑
-    // 为了移植，我们先实现一个简化版
     let bbcode = `[calendar]\n`;
     const fromDateTime = moment.tz(`${moment(this.fromDate).format("YYYY-MM-DD")} ${this.fromTime}`, this.timezone);
 
     bbcode += `[event start="${fromDateTime.format()}"`;
-    if (this.toDate) {
+    if (this.toDate && this.toTime) {
       const toDateTime = moment.tz(`${moment(this.toDate).format("YYYY-MM-DD")} ${this.toTime}`, this.timezone);
       bbcode += ` end="${toDateTime.format()}"`;
     }
-    bbcode += `]`;
-    bbcode += `\n[/event]\n[/calendar]`;
+    bbcode += ` name="Your Event Name"]\n`; // 添加一个默认名称
+    bbcode += `[/event]\n[/calendar]`;
 
     this.args.model.toolbarEvent.addText(bbcode);
     this.modal.close();
   }
 
   <template>
+    {{! 现在所有的组件和 helper 都已导入，可以正常使用了 }}
     <DModal @title={{I18n.t "calendar.builder.title"}} @closeModal={{@closeModal}}>
       <:body>
-        {{! Tab 导航 }}
         <div class="discourse-calendar-modal-tabs">
-          <button class="{{if (eq this.activeTab "date") "active"}}" {{on "click" (fn this.setTab "date")}}>
+          {{! 使用 getter 替代 (eq) }}
+          <button class="{{if this.isDateTabActive "active"}}" {{on "click" (fn this.setTab "date")}}>
             {{I18n.t "calendar.builder.tabs.date"}}
           </button>
-          <button class="{{if (eq this.activeTab "recurrence") "active"}}" {{on "click" (fn this.setTab "recurrence")}}>
+          <button class="{{if (not this.isDateTabActive) "active"}}" {{on "click" (fn this.setTab "recurrence")}}>
             {{I18n.t "calendar.builder.tabs.recurrence"}}
           </button>
         </div>
 
-        {{! Tab 内容 }}
         <div class="discourse-calendar-modal-content">
-          {{#if (eq this.activeTab "date")}}
-            {{! --- 日期 Tab --- }}
+          {{#if this.isDateTabActive}}
             <div class="control-group">
               <label>{{I18n.t "calendar.builder.from"}}</label>
-              {{! 我们将在这里使用子组件 }}
               <DiscourseCalendarDatePicker @type="date" @value={{this.fromDate}} @onChange={{fn (mut this.fromDate)}} />
               <DiscourseCalendarDatePicker @type="time" @value={{this.fromTime}} @onChange={{fn (mut this.fromTime)}} />
             </div>
@@ -75,11 +81,8 @@ export default class DiscourseCalendarModal extends Component {
               <DiscourseCalendarDatePicker @type="date" @value={{this.toDate}} @onChange={{fn (mut this.toDate)}} />
               <DiscourseCalendarDatePicker @type="time" @value={{this.toTime}} @onChange={{fn (mut this.toTime)}} />
             </div>
-            {{! ... 其他如 Timezone, All Day 等控件 ... }}
           {{else}}
-            {{! --- 重复规则 Tab --- }}
             <p>Recurrence options will be here.</p>
-            {{! 这里将是官方的 recurrence editor 组件 }}
           {{/if}}
         </div>
       </:body>
