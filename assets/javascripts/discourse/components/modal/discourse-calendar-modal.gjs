@@ -28,12 +28,9 @@ export default class DiscourseCalendarModal extends Component {
     return this.activeTab === "date";
   }
 
-  // --- 修正从这里开始 ---
-  // 创建一个新的 getter 用于判断 recurrence tab 是否激活
   get isRecurrenceTabActive() {
     return this.activeTab === "recurrence";
   }
-  // --- 修正到这里结束 ---
 
   @action
   setTab(tabName) {
@@ -64,7 +61,6 @@ export default class DiscourseCalendarModal extends Component {
           <button class="{{if this.isDateTabActive "active"}}" {{on "click" (fn this.setTab "date")}}>
             {{I18n.t "calendar.builder.tabs.date"}}
           </button>
-          {{! 使用新的 getter 替代 (not ...) }}
           <button class="{{if this.isRecurrenceTabActive "active"}}" {{on "click" (fn this.setTab "recurrence")}}>
             {{I18n.t "calendar.builder.tabs.recurrence"}}
           </button>
@@ -87,10 +83,14 @@ export default class DiscourseCalendarModal extends Component {
           {{/if}}
         </div>
       </:body>
+      
+      {!--- 修正从这里开始 ---}}
       <:footer>
         <DButton @class="btn-primary" @action={{this.insertCalendar}} @label="calendar.builder.insert" />
         <DButton @action={{@closeModal}} @label="calendar.builder.cancel" />
-      </:footer-x>
+      </:footer>
+      {!--- 修正到这里结束 ---}}
+      
     </DModal>
   </template>
 }
