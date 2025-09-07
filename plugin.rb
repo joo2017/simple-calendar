@@ -1,4 +1,4 @@
-# name: Simple Calendar
+# name: simple-calendar
 # about: A simplified version of the Discourse Calendar plugin for transplantation practice.
 # version: 0.1
 # authors: Your Name
